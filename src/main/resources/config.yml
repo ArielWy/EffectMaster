@@ -1,0 +1,13 @@
+# Configuration File
+
+# All the effects
+Effects:
+  effect1: SPEED
+  effect2: LEVITATION
+  effect3: HEALTH_BOOST
+  effect4: DAMAGE_RESISTANCE
+
+# All the messages
+Messages:
+  NoEffects: "No Effect Error"
+  BanMessage: "You have been banned for having no effects."

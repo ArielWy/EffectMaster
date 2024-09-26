@@ -1,10 +1,19 @@
 package me.olios.plugins.effectmaster
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.*
+import kotlin.random.Random
 
 class EffectHandler(private val plugin: EffectMaster, private val player: Player) {
     private val config = plugin.config
@@ -14,7 +23,7 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         val effects: List<PotionEffectType> = getEffects() ?: return
 
         effects.forEachIndexed { index, effectType ->
-            player.addPotionEffect(PotionEffect(effectType, Int.MAX_VALUE, 1, true))
+            player.addPotionEffect(PotionEffect(effectType, -1, 1, true))
             saveEffectLevel(index + 1, 1)
         }
     }
@@ -23,10 +32,32 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         val effects: List<PotionEffectType> = getEffects() ?: return
 
         effects.forEachIndexed { index, effectType ->
-            val level = loadEffectLevel(index + 1)
-            player.addPotionEffect(PotionEffect(effectType, Int.MAX_VALUE, level, true))
-            saveEffectLevel(index + 1, 1)
+            val level: Int = loadEffectLevel(index + 1) ?: return
+            if (level > 0) player.addPotionEffect(PotionEffect(effectType, -1, level, true))
         }
+    }
+
+    fun decreaseRandomEffect() {
+        val effects: List<PotionEffectType> = getEffects() ?: return
+
+        // Filter effects with level greater than 0
+        val eligibleEffects = effects.filterIndexed { index, _ ->
+            val level = loadEffectLevel(index + 1) ?: return
+            level > 0
+        }
+
+        // Choose a random eligible effect
+        if (eligibleEffects.isNotEmpty()) {
+            val randomIndex = Random.nextInt(eligibleEffects.size)
+            val effectType = eligibleEffects[randomIndex]
+
+            // Decrease the level
+            val currentLevel: Int = loadEffectLevel(randomIndex + 1) ?: return
+            saveEffectLevel(randomIndex + 1, currentLevel - 1)
+            player.removePotionEffect(effectType)
+            player.addPotionEffect(PotionEffect(effectType, Integer.MAX_VALUE, currentLevel - 2))
+        }
+        else noEffectBan() // Ban the player if he doesn't have any effects
     }
 
     private fun saveEffectLevel(effectId: Int, level: Int) {
@@ -34,14 +65,26 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         dataContainer.set(key, PersistentDataType.INTEGER, level)
     }
 
-    private fun loadEffectLevel(effectId: Int): Int {
+    private fun loadEffectLevel(effectId: Int): Int? {
         val key = NamespacedKey(plugin, "effect_$effectId")
+
+        if (!dataContainer.has(key)) {
+            applyInitialEffects()
+            return null
+        }
+
         return dataContainer.get(key, PersistentDataType.INTEGER) ?: 1 // Default to 1 if not found
     }
 
     private fun getEffects():  List<PotionEffectType>? {
-        val effectNames = config.getStringList("Effects") // get all the effects from the config
+        val effectsSection = config.getConfigurationSection("Effects") // get all the effects from the config
+        val effectNames = effectsSection?.getKeys(false)?.mapNotNull { key -> effectsSection.getString(key) } ?: emptyList()
+
+        println("effectNames: $effectNames")
+
         val effects = effectNames.mapNotNull { PotionEffectType.getByName(it) } // get them as a potion type (if exist)
+
+        println("effects: $effects")
 
         if (effects.size != 4) { // if the potion effect list isn't 4 (some potions isn't right) warn the console and return
             potionEffectErrorMessage()
@@ -52,8 +95,30 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
     }
 
     private fun potionEffectErrorMessage() {
-        val message = config.getString("Messages.NoEffects")
+        val message = config.getString("Messages.NoEffectsError")
 
-        plugin.logger.warning(message)
+        plugin.logger.severe(message)
+    }
+
+    private fun noEffectBan() {
+        // Get the config values
+        val configBanDate = config.getInt("General.BanTime")
+        val configBanMessage = config.getString("Messages.BanMessage")
+
+        val banExpires = LocalDateTime.now().plusDays(configBanDate.toLong()) // Get the ban expires date
+        val instant = banExpires.atZone(ZoneId.systemDefault()).toInstant() // Convert LocalDateTime to Instant
+        val date = Date.from(instant) // Convert Instant to java.util.Date
+
+        // if toggled, broadcast to all the players
+        if (config.getBoolean("General.NoEffectBroadcast")) {
+            val banMessage: String = config.getString("Messages.BanMessage").toString()
+
+            val playerNamePlaceholder = Placeholder.parsed("<player>", player.name)
+            val resolvedMessage = MiniMessage.miniMessage().deserialize(banMessage, TagResolver.resolver(playerNamePlaceholder))
+            Bukkit.broadcast(resolvedMessage)
+        }
+
+        // Ban the player
+        player.banPlayer(configBanMessage, date)
     }
 }

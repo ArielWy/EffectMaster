@@ -1,13 +1,18 @@
 # Configuration File
 
+General:
+  BanTime: 7 # In days
+  NoEffectBroadcast: true # Send message when a player got ban from having no effects
+
 # All the effects
 Effects:
-  effect1: SPEED
-  effect2: LEVITATION
-  effect3: HEALTH_BOOST
-  effect4: DAMAGE_RESISTANCE
+  effect1: "SPEED"
+  effect2: "INCREASE_DAMAGE"
+  effect3: "HEALTH_BOOST"
+  effect4: "DAMAGE_RESISTANCE"
 
 # All the messages
 Messages:
-  NoEffects: "No Effect Error"
+  NoEffectsError: "No Effect Error"
   BanMessage: "You have been banned for having no effects."
+  NoEffectMessages: "<light_purple>The player <dark_purple><player></dark_purple> got ban from having no effects!</light_purple>"

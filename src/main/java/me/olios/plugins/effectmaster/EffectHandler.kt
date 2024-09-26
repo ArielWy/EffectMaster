@@ -60,7 +60,7 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         else noEffectBan() // Ban the player if he doesn't have any effects
     }
 
-    private fun saveEffectLevel(effectId: Int, level: Int) {
+    fun saveEffectLevel(effectId: Int, level: Int) {
         val key = NamespacedKey(plugin, "effect_$effectId")
         dataContainer.set(key, PersistentDataType.INTEGER, level)
     }

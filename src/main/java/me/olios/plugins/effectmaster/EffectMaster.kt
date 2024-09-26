@@ -1,5 +1,6 @@
 package me.olios.plugins.effectmaster
 
+import me.olios.plugins.effectmaster.commands.EffectControlCommand
 import me.olios.plugins.effectmaster.listeners.PlayerDeathEvent
 import me.olios.plugins.effectmaster.listeners.PlayerJoinEvent
 import me.olios.plugins.effectmaster.listeners.PlayerRespawnEvent
@@ -12,11 +13,16 @@ class EffectMaster : JavaPlugin() {
         saveDefaultConfig()
 
         registerListeners()
+        registerCommands()
     }
 
     private fun registerListeners() {
         Bukkit.getServer().pluginManager.registerEvents(PlayerJoinEvent(this), this)
         Bukkit.getServer().pluginManager.registerEvents(PlayerDeathEvent(this), this)
         Bukkit.getServer().pluginManager.registerEvents(PlayerRespawnEvent(this), this)
+    }
+
+    private fun registerCommands() {
+        getCommand("effectcontrol")?.setExecutor(EffectControlCommand(this))
     }
 }

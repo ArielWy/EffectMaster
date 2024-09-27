@@ -9,6 +9,8 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 
 class EffectMasterCommand(private val plugin: EffectMaster): CommandExecutor, TabCompleter {
 
@@ -19,8 +21,8 @@ class EffectMasterCommand(private val plugin: EffectMaster): CommandExecutor, Ta
         val effects = EffectHandler(plugin, sender).getEffects()
         val effectMap = effects?.mapIndexed { index, effect -> effect.name.lowercase() to index + 1 }?.toMap()
 
-        val player: Player = if (p3 != null && p3.size > 4) Bukkit.getPlayer(p3[3]) ?: sender else sender
-        val effectLevel: Int = if (p3 != null && p3.size > 3) p3[2].toInt() else 1
+        val player: Player = if (p3 != null && p3.size > 3) Bukkit.getPlayer(p3[3]) ?: sender else sender
+        val effectLevel: Int = if (p3 != null && p3.size > 2) p3[2].toInt() else 1
 
         when (command) {
             "setlevel" -> {
@@ -29,12 +31,14 @@ class EffectMasterCommand(private val plugin: EffectMaster): CommandExecutor, Ta
                     effects?.forEachIndexed { index, _ ->
                         EffectHandler(plugin, player).saveEffectLevel(index + 1, effectLevel)
                         EffectHandler(plugin, player).reloadEffects()
+                        sender.sendMessage("effect: $effectName, level: $effectLevel")
                     }
                 } else {
                     val effectIndex = effectMap?.get(effectName)
                     if (effectIndex != null) {
                         EffectHandler(plugin, player).saveEffectLevel(effectIndex, effectLevel)
                         EffectHandler(plugin, player).reloadEffects()
+                        sender.sendMessage("effect: $effectName, level: $effectLevel")
                     } else {
                         sender.sendMessage("Invalid effect name: $effectName")
                     }
@@ -43,6 +47,10 @@ class EffectMasterCommand(private val plugin: EffectMaster): CommandExecutor, Ta
             "defineitem" -> DefineItem(player, plugin).checkForItem()
 
             "getitem" -> DefineItem(player, plugin).getItem()
+
+            "check" -> {
+                player.addPotionEffect(PotionEffect(PotionEffectType.NIGHT_VISION, -1, 0, true))
+            }
         }
 
         return true

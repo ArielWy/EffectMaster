@@ -23,7 +23,7 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         val effects: List<PotionEffectType> = getEffects() ?: return
 
         effects.forEachIndexed { index, effectType ->
-            player.addPotionEffect(PotionEffect(effectType, -1, 1, true))
+            player.addPotionEffect(PotionEffect(effectType, -1, 0, true))
             saveEffectLevel(index + 1, 1)
         }
     }
@@ -33,7 +33,8 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
 
         effects.forEachIndexed { index, effectType ->
             val level: Int = loadEffectLevel(index + 1) ?: return
-            if (level > 0) player.addPotionEffect(PotionEffect(effectType, -1, level, true))
+            player.removePotionEffect(effectType)
+            if (level > 0) player.addPotionEffect(PotionEffect(effectType, -1, level - 1, true))
         }
     }
 

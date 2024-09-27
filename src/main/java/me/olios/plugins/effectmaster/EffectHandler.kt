@@ -47,18 +47,24 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
             level > 0
         }
 
+        // player.sendMessage("effect list: $eligibleEffects")
+
         // Choose a random eligible effect
         if (eligibleEffects.isNotEmpty()) {
             val randomIndex = Random.nextInt(eligibleEffects.size)
             val effectType = eligibleEffects[randomIndex]
 
+            // Find the correct index for the chosen effect
+            val effectIndex = effects.indexOf(effectType) + 1
+
             // Decrease the level
-            val currentLevel: Int = loadEffectLevel(randomIndex + 1) ?: return
-            saveEffectLevel(randomIndex + 1, currentLevel - 1)
-            player.removePotionEffect(effectType)
-            player.addPotionEffect(PotionEffect(effectType, Integer.MAX_VALUE, currentLevel - 2))
-        }
-        else noEffectBan() // Ban the player if he doesn't have any effects
+            val currentLevel: Int = loadEffectLevel(effectIndex) ?: return
+            if (currentLevel > 0) {
+                saveEffectLevel(effectIndex, currentLevel - 1)
+                player.removePotionEffect(effectType)
+                player.addPotionEffect(PotionEffect(effectType, -1, currentLevel - 2))
+            }
+        } else noEffectBan() // Ban the player if they don't have any effects
     }
 
     fun saveEffectLevel(effectId: Int, level: Int) {
@@ -114,10 +120,12 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         if (config.getBoolean("General.NoEffectBroadcast")) {
             val banMessage: String = config.getString("Messages.BanMessage").toString()
 
-            val playerNamePlaceholder = Placeholder.parsed("<player>", player.name)
+            val playerNamePlaceholder = Placeholder.parsed("player", player.name)
             val resolvedMessage = MiniMessage.miniMessage().deserialize(banMessage, TagResolver.resolver(playerNamePlaceholder))
             Bukkit.broadcast(resolvedMessage)
         }
+
+        applyInitialEffects() // set initial effect after ban
 
         // Ban the player
         player.banPlayer(configBanMessage, date)

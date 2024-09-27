@@ -15,4 +15,4 @@ Effects:
 Messages:
   NoEffectsError: "No Effect Error"
   BanMessage: "You have been banned for having no effects."
-  NoEffectMessages: "<light_purple>The player <dark_purple><player></dark_purple> got ban from having no effects!</light_purple>"
+NoEffectMessages: "<light_purple>The player <dark_purple>{player}</dark_purple> got ban from having no effects!</light_purple>"

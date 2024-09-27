@@ -1,6 +1,6 @@
 package me.olios.plugins.effectmaster
 
-import me.olios.plugins.effectmaster.commands.EffectControlCommand
+import me.olios.plugins.effectmaster.commands.EffectMasterCommand
 import me.olios.plugins.effectmaster.listeners.PlayerDeathEvent
 import me.olios.plugins.effectmaster.listeners.PlayerJoinEvent
 import me.olios.plugins.effectmaster.listeners.PlayerRespawnEvent
@@ -23,6 +23,6 @@ class EffectMaster : JavaPlugin() {
     }
 
     private fun registerCommands() {
-        getCommand("effectcontrol")?.setExecutor(EffectControlCommand(this))
+        getCommand("effectmaster")?.setExecutor(EffectMasterCommand(this))
     }
 }

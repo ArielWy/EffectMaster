@@ -4,9 +4,16 @@ main: me.olios.plugins.effectmaster.EffectMaster
 api-version: 1.20
 
 commands:
-  effectcontrol:
+  effectmaster:
+    description: Admin command for the EffectMaster plugin.
     aliases:
-      - ec
-      - econtrol
-    usage: /<command> <effect> <level>
-    description: admin command to set the player effect level
+      - em
+      - emaster
+    usage: /<command>
+    permission: effectmaster.admin
+    permission-message: §4You don't have permission to do that!
+
+permissions:
+  effectmaster.admin:
+    default: op
+    description: Allows you to use the /effectmaster command

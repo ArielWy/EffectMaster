@@ -76,7 +76,7 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         return dataContainer.get(key, PersistentDataType.INTEGER) ?: 1 // Default to 1 if not found
     }
 
-    private fun getEffects():  List<PotionEffectType>? {
+    fun getEffects():  List<PotionEffectType>? {
         val effectsSection = config.getConfigurationSection("Effects") // get all the effects from the config
         val effectNames = effectsSection?.getKeys(false)?.mapNotNull { key -> effectsSection.getString(key) } ?: emptyList()
 

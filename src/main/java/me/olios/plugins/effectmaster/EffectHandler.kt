@@ -67,6 +67,19 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         } else noEffectBan() // Ban the player if they don't have any effects
     }
 
+    fun increaseEffect(effectIndex: Int) {
+        val effects: List<PotionEffectType> = getEffects() ?: return
+
+        val effectType = effects[effectIndex - 1]
+
+        // Increase the level
+        val currentLevel: Int = loadEffectLevel(effectIndex) ?: 0
+        saveEffectLevel(effectIndex, currentLevel + 1)
+        player.removePotionEffect(effectType)
+        player.addPotionEffect(PotionEffect(effectType, -1, currentLevel))
+    }
+
+
     fun saveEffectLevel(effectId: Int, level: Int) {
         val key = NamespacedKey(plugin, "effect_$effectId")
         dataContainer.set(key, PersistentDataType.INTEGER, level)
@@ -87,11 +100,7 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         val effectsSection = config.getConfigurationSection("Effects") // get all the effects from the config
         val effectNames = effectsSection?.getKeys(false)?.mapNotNull { key -> effectsSection.getString(key) } ?: emptyList()
 
-        println("effectNames: $effectNames")
-
         val effects = effectNames.mapNotNull { PotionEffectType.getByName(it) } // get them as a potion type (if exist)
-
-        println("effects: $effects")
 
         if (effects.size != 4) { // if the potion effect list isn't 4 (some potions isn't right) warn the console and return
             potionEffectErrorMessage()

@@ -22,6 +22,7 @@ class PlayerInteractEvent(private val plugin: EffectMaster): Listener {
         val item: ItemStack? = retrieve()
 
         if (itemStack != item) return
+        event.isCancelled = true
 
         EffectInterface(plugin).openGUI(player)
     }

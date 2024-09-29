@@ -2,6 +2,8 @@ package me.olios.plugins.effectmaster
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -16,44 +18,52 @@ class EffectInterface(private val plugin: EffectMaster) {
 
         EffectMaster.playerInventory[player.uniqueId] = inventory
 
-        // create border item
-        val borderItem = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
-        val borderItemMeta = borderItem.itemMeta
-        borderItemMeta.displayName(Component.text(""))
+        // Create border item
+        val borderItem = createItem(Material.WHITE_STAINED_GLASS_PANE, "")
 
-        // create info item
-        val infoItem: ItemStack = configItemStack("Items.InfoItem.material", "Items.InfoItem.name", "Items.InfoItem.lore")
+        // Create info and effect items
+        val infoItem = configItemStack("Items.InfoItem.material", "Items.InfoItem.name", "Items.InfoItem.lore")
+        val effectItems = listOf(
+            configItemStack("Items.Effect1.material", "Items.Effect1.name", "Items.Effect1.lore"),
+            configItemStack("Items.Effect2.material", "Items.Effect2.name", "Items.Effect2.lore"),
+            configItemStack("Items.Effect3.material", "Items.Effect3.name", "Items.Effect3.lore"),
+            configItemStack("Items.Effect4.material", "Items.Effect4.name", "Items.Effect4.lore")
+        )
 
-        // create effect items
-        val effect1Item: ItemStack = configItemStack("Items.Effect1.material", "Items.Effect1.name", "Items.Effect1.lore")
-        val effect2Item: ItemStack = configItemStack("Items.Effect2.material", "Items.Effect2.name", "Items.Effect2.lore")
-        val effect3Item: ItemStack = configItemStack("Items.Effect3.material", "Items.Effect3.name", "Items.Effect3.lore")
-        val effect4Item: ItemStack = configItemStack("Items.Effect4.material", "Items.Effect4.name", "Items.Effect4.lore")
-
-        // set items
+        // Set items in inventory
         inventory.setItem(0, infoItem)
-        inventory.setItem(1, borderItem)
-        inventory.setItem(2, effect1Item)
-        inventory.setItem(3, effect2Item)
-        inventory.setItem(4, effect3Item)
-        inventory.setItem(5, effect4Item)
-        inventory.setItem(6, borderItem)
-        inventory.setItem(7, borderItem)
-        inventory.setItem(8, borderItem)
+        effectItems.forEachIndexed { index, item -> inventory.setItem(2 + index, item) }
+        for (i in listOf(1, 6, 7, 8)) {
+            inventory.setItem(i, borderItem)
+        }
 
         player.openInventory(inventory) // Open the GUI
     }
 
+    private fun createItem(material: Material, displayName: String): ItemStack {
+        val itemStack = ItemStack(material)
+        val itemMeta = itemStack.itemMeta
+        itemMeta.displayName(Component.text(displayName))
+        itemStack.itemMeta = itemMeta
+        return itemStack
+    }
+
     private fun configItemStack(materialPath: String, namePath: String, lorePath: String): ItemStack {
-        val material = Material.getMaterial(materialPath) ?: return ItemStack(Material.BARRIER)
+        val material = Material.getMaterial(config.getString(materialPath).toString()) ?: return ItemStack(Material.BARRIER)
         val itemStack = ItemStack(material)
         val itemMeta: ItemMeta = itemStack.itemMeta
 
         val displayName: String = config.getString(namePath).toString()
         val lore = config.getList(lorePath)
 
+
+
+        // deserialize the displayName and lore using MiniMessage
         val displayNameComponent = MiniMessage.miniMessage().deserialize(displayName)
-        val loreComponent: List<Component> = lore?.map { MiniMessage.miniMessage().deserialize(it as String) } ?: listOf(Component.text(""))
+
+        val loreComponent = lore?.map { line ->
+            MiniMessage.miniMessage().deserialize(line as String)
+        } ?: listOf(Component.text(""))
 
         itemMeta.displayName(displayNameComponent)
         itemMeta.lore(loreComponent)

@@ -20,7 +20,7 @@ NoEffectMessages: "<light_purple>The player <dark_purple>{player}</dark_purple> 
 Items:
   InfoItem:
     material: BOOK
-    name: <gold>{Info}</gold>
+    name: <gold>Info Item</gold>
     lore:
       - your text
       - for the players

@@ -16,3 +16,37 @@ Messages:
   NoEffectsError: "No Effect Error"
   BanMessage: "You have been banned for having no effects."
 NoEffectMessages: "<light_purple>The player <dark_purple>{player}</dark_purple> got ban from having no effects!</light_purple>"
+
+Items:
+  InfoItem:
+    material: BOOK
+    name: <gold>{Info}</gold>
+    lore:
+      - your text
+      - for the players
+      - in here
+      - with mini message
+
+  Effect1:
+    material: IRON_DOOR
+    name: <gold>{effect1}</gold>
+    lore:
+      - effect1
+
+  Effect2:
+    material: IRON_DOOR
+    name: <gold>{effect2}</gold>
+    lore:
+      - effect2
+
+  Effect3:
+    material: IRON_DOOR
+    name: <gold>{effect3}</gold>
+    lore:
+      - effect3
+
+  Effect4:
+    material: IRON_DOOR
+    name: <gold>{effect4}</gold>
+    lore:
+      - effect4

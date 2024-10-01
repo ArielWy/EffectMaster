@@ -1,11 +1,16 @@
-package me.olios.plugins.effectmaster
+package me.olios.plugins.effectmaster.handler
 
+import me.olios.plugins.effectmaster.EffectMaster
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.inventory.ItemStack
 import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
@@ -67,18 +72,68 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
         } else noEffectBan() // Ban the player if they don't have any effects
     }
 
-    fun increaseEffect(effectIndex: Int) {
+    fun effectInteraction(event: InventoryClickEvent, itemStack: ItemStack) {
+        val player = event.whoClicked as Player
+        val itemMeta = itemStack.itemMeta ?: return
+        val itemDisplayName = itemMeta.displayName() ?: return
+
+        // Check each effect item in the config
+        val effectItems = listOf("Effect1", "Effect2", "Effect3", "Effect4")
+        for ((index, effectItem) in effectItems.withIndex()) {
+            val configDisplayName = config.getString("Items.$effectItem.name") ?: continue
+            val displayNameComponent = MiniMessage.miniMessage().deserialize(configDisplayName)
+
+            if (itemDisplayName != displayNameComponent) continue
+
+            // The item matches the configured display name
+            EffectHandler(plugin, player).increaseEffect(index + 1)
+        }
+    }
+
+    private fun increaseEffect(effectIndex: Int) {
         val effects: List<PotionEffectType> = getEffects() ?: return
 
         val effectType = effects[effectIndex - 1]
 
-        // Increase the level
+        // Load the current level and the config level boundaries
         val currentLevel: Int = loadEffectLevel(effectIndex) ?: 0
+        val levelRequirement: Int = config.getInt("General.levelRequirement").takeIf { it != 0 } ?: 2
+        val maxEffectLevel: Int = config.getInt("General.maxEffectLevel").takeIf { it != 0 } ?: 5
+
+        // Check if the effect can be upgraded
+        if (currentLevel >= maxEffectLevel) {
+            maxEffectLevel(maxEffectLevel)
+            return
+        }
+
+        // Check if all effects meet the level requirement
+        val allEffectsMeetRequirement = effects.all { effect ->
+            val effectLevel = loadEffectLevel(effects.indexOf(effect) + 1) ?: 1
+            effectLevel >= levelRequirement
+        }
+
+        if (currentLevel >= levelRequirement && !allEffectsMeetRequirement) {
+            levelRequirement(levelRequirement)
+            return
+        }
+
+        // Upgrade the effect level
         saveEffectLevel(effectIndex, currentLevel + 1)
         removeEffect(effectType)
         player.addPotionEffect(PotionEffect(effectType, -1, currentLevel))
-    }
 
+        // Set the main hand slot to air
+        val airItem = ItemStack(Material.AIR)
+        player.inventory.setItemInMainHand(airItem)
+
+        // close the inventory
+        player.inventory.close()
+
+        // remove inv from the companion object
+        EffectMaster.playerInventory.remove(player.uniqueId)
+
+        player.sendMessage("Increased effect: ${effects[effectIndex - 1].name}") //send message to the player
+    }
 
     fun saveEffectLevel(effectId: Int, level: Int) {
         val key = NamespacedKey(plugin, "effect_$effectId")
@@ -146,5 +201,44 @@ class EffectHandler(private val plugin: EffectMaster, private val player: Player
 
         // remove the effect
         player.removePotionEffect(effectType)
+    }
+
+    private fun levelRequirement(level: Int) {
+        val message: String = config.getString("Messages.levelRequirementMessage").toString()
+        val placeholder = mapOf(
+            "level" to level.toString(),
+        )
+
+        player.inventory.close()
+        sendMessage(message, placeholder)
+    }
+
+    private fun maxEffectLevel(maxLevel: Int) {
+        val message: String = config.getString("Messages.maxEffectLevelMessage").toString()
+        val placeholder = mapOf(
+            "max_level" to maxLevel.toString(),
+        )
+
+        player.inventory.close()
+        sendMessage(message, placeholder)
+    }
+
+    private fun sendMessage(message: String, placeholders: Map<String, String> = emptyMap(), log: Boolean = true) {
+        // Convert the map to a list of TagResolvers
+        val resolvers = placeholders.map { (key, value) ->
+            Placeholder.parsed(key, value)
+        }
+
+        val resolver = TagResolver.resolver(*resolvers.toTypedArray()) // Create the final TagResolver
+
+        val messageComponent = MiniMessage.miniMessage().deserialize(message, resolver) // Deserialize the message with the resolver
+
+        if (log) { // Log to console if needed
+            val plainTextMessage: String = PlainTextComponentSerializer.plainText().serialize(messageComponent)
+            plugin.logger.info(plainTextMessage)
+        }
+
+        // Send to the player
+        player.sendMessage(messageComponent)
     }
 }

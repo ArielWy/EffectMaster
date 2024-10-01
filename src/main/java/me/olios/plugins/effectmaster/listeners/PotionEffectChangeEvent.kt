@@ -1,6 +1,6 @@
 package me.olios.plugins.effectmaster.listeners
 
-import me.olios.plugins.effectmaster.EffectHandler
+import me.olios.plugins.effectmaster.handler.EffectHandler
 import me.olios.plugins.effectmaster.EffectMaster
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler

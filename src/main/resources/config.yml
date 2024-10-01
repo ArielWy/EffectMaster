@@ -26,43 +26,43 @@ Items:
 
   Effect1:
     material: IRON_DOOR
-    name: <gold>{effect1}</gold>
+    name: <gold>Speed</gold>
     lore:
-      - effect1
+      - yeah click me please
 
   Effect2:
-    material: IRON_DOOR
-    name: <gold>{effect2}</gold>
+    material: DIAMOND_SWORD
+    name: <gold>Strength</gold>
     lore:
-      - effect2
+      - yeah click me please
 
   Effect3:
     material: IRON_DOOR
-    name: <gold>{effect3}</gold>
+    name: <gold>Health Boost</gold>
     lore:
-      - effect3
+      - yeah click me please
 
   Effect4:
     material: IRON_DOOR
-    name: <gold>{effect4}</gold>
+    name: <gold>Resistance</gold>
     lore:
-      - effect4
+      - yeah click me please
 
 # All the messages
 Messages:
   # the plugin use MiniMessage for the config messages
-  # you can create your message in https://webui.advntr.dev/
-  broadcastBanMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <light_purple>The player <dark_purple>{player}</dark_purple> got ban from having no effects!</light_purple>"
-  levelRequirementMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <dark_red>You must upgrade all effects to level <red>{level}</red> before upgrading to the next level!</dark_red>"
-  maxEffectLevelMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <red>You cannot upgrade this effect any further. Maximum level is <dark_red>{max_level}</dark_red>.</red>"
+  # you can create your message using https://webui.advntr.dev/
+  broadcastBanMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <light_purple>The player <dark_purple><player></dark_purple> got ban from having no effects!</light_purple>"
+  levelRequirementMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <dark_red>You must upgrade all effects to level <red><level></red> before upgrading to the next level!</dark_red>"
+  maxEffectLevelMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <red>You cannot upgrade this effect any further. Maximum level is <dark_red><max_level></dark_red>.</red>"
 
   # admin messages
   noItemInHandMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <dark_red>You are not holding anything in your hand!</dark_red>"
   itemNotFoundMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <red>The item does not found in the config file!</red>"
-  itemDefinedMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <green>Define the item successfully as</green> <blue>{item}</blue>"
-  getItemMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <blue>Give <green>{player}</green> the defined item as <yellow>{item}</yellow></blue>"
+  itemDefinedMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <green>Define the item successfully as</green> <blue><item></blue>"
+  getItemMessage: "<gray>[</gray><gold>EffectMaster</gold><gray>]</gray> <blue>Give <green><player></green> the defined item as <yellow><item></yellow></blue>"
 
 
   # Not using MiniMessage
-  noEffectsError: "something wrong with the effects in the config!"
+  noEffectsError: "something wrong with the effects in the config!" # Log the console if the effects in the console isn't right
   banMessage: "You have been banned for having no effects."

@@ -1,7 +1,7 @@
 package me.olios.plugins.effectmaster.commands
 
 import me.olios.plugins.effectmaster.DefineItem
-import me.olios.plugins.effectmaster.EffectHandler
+import me.olios.plugins.effectmaster.handler.EffectHandler
 import me.olios.plugins.effectmaster.EffectMaster
 import org.bukkit.Bukkit
 import org.bukkit.command.Command

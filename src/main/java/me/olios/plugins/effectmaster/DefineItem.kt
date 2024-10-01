@@ -5,6 +5,10 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import java.io.File
 import java.io.IOException
 
@@ -12,6 +16,7 @@ class DefineItem(private val player: Player, private val plugin: EffectMaster) {
     private val defineFile: File = File(plugin.dataFolder, "define.yml")
     private val defineConfig: FileConfiguration = YamlConfiguration.loadConfiguration(defineFile)
     private val configPath: String = "Item"
+    private val config = plugin.config
 
     init {
         // Load or create the define.yml configuration file
@@ -21,11 +26,19 @@ class DefineItem(private val player: Player, private val plugin: EffectMaster) {
 
     fun getItem() {
         val item = retrieve()
+
         if (item != null) {
             player.inventory.setItemInMainHand(item)
-            sendMessage("§agive §2${player.name} the §9$configPath§a as §6{§e${item.type}§6}")
+            val message: String = config.getString("Messages.getItemMessage").toString()
+            val placeholder = mapOf(
+                "player" to player.name,
+                "item" to item.type.toString(),
+            )
+            sendMessage(message, placeholder)
+        } else {
+            val message: String = config.getString("Messages.itemNotFoundMessage").toString()
+            sendMessage(message)
         }
-        else sendMessage("§cThe §9$configPath§c does not found in the config file!")
     }
 
     fun checkForItem() {
@@ -35,7 +48,8 @@ class DefineItem(private val player: Player, private val plugin: EffectMaster) {
     }
 
     private fun isCanceled() {
-        player.sendMessage("§cYou are not holding anything in your hand!")  // Send message to the player
+        val message: String = config.getString("Messages.noItemInHandMessage").toString()
+        sendMessage(message, log = false)
     }
 
     private fun defineItem(item: ItemStack) {
@@ -48,9 +62,14 @@ class DefineItem(private val player: Player, private val plugin: EffectMaster) {
         }
 
         if (defineConfig.getItemStack(configPath) == item) {
-            sendMessage("§aDefine the §9$configPath§a successfully as §6{§e${defineConfig.getString(configPath)}§6}")
+            val message: String = config.getString("Messages.itemDefinedMessage").toString()
+            val placeholder = mapOf(
+                "item" to item.toString(),
+            )
+            sendMessage(message, placeholder)
         } else {
-            sendMessage("§cThe §9$configPath§a is not found in the config file")
+            val message: String = config.getString("Messages.itemNotFoundMessage").toString()
+            sendMessage(message)
         }
     }
 
@@ -72,8 +91,21 @@ class DefineItem(private val player: Player, private val plugin: EffectMaster) {
         return configItem
     }
 
-    private fun sendMessage(message: String) {
-        plugin.logger.info("[BanBook] $message") // Log to console with prefix
-        player.sendMessage(message) // Send to player
+    private fun sendMessage(message: String, placeholders: Map<String, String> = emptyMap(), log: Boolean = true) {
+        // Convert the map to a list of TagResolvers
+        val resolvers = placeholders.map { (key, value) ->
+            Placeholder.parsed(key, value)
+        }
+
+        val resolver = TagResolver.resolver(*resolvers.toTypedArray()) // Create the final TagResolver
+
+        val messageComponent = MiniMessage.miniMessage().deserialize(message, resolver) // Deserialize the message with the resolver
+
+        if (log) // Log to console
+            plugin.logger.info("$messageComponent")
+
+        // Send to the player
+        player.sendMessage(messageComponent)
     }
+
 }

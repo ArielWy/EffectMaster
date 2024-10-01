@@ -26,6 +26,7 @@ class EffectMaster : JavaPlugin() {
         Bukkit.getServer().pluginManager.registerEvents(PlayerRespawnEvent(this), this)
         Bukkit.getServer().pluginManager.registerEvents(PlayerInteractEvent(this), this)
         Bukkit.getServer().pluginManager.registerEvents(InventoryClickEvent(this), this)
+        Bukkit.getServer().pluginManager.registerEvents(PotionEffectChangeEvent(this), this)
     }
 
     private fun registerCommands() {

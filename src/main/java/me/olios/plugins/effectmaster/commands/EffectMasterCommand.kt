@@ -26,13 +26,14 @@ class EffectMasterCommand(private val plugin: EffectMaster): CommandExecutor, Ta
 
         when (command) {
             "setlevel" -> {
-                val effectName = p3[1].lowercase()
+                var effectName = "all"
+                if (p3.size > 1) effectName = p3[1].lowercase()
                 if (effectName == "all") {
                     effects?.forEachIndexed { index, _ ->
                         EffectHandler(plugin, player).saveEffectLevel(index + 1, effectLevel)
                         EffectHandler(plugin, player).reloadEffects()
-                        sender.sendMessage("effect: $effectName, level: $effectLevel")
                     }
+                    sender.sendMessage("effect: $effectName, level: $effectLevel")
                 } else {
                     val effectIndex = effectMap?.get(effectName)
                     if (effectIndex != null) {

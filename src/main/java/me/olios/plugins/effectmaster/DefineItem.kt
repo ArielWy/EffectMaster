@@ -73,7 +73,7 @@ class DefineItem(private val player: Player, private val plugin: EffectMaster) {
         }
     }
 
-    private fun retrieve(): ItemStack? {
+    fun retrieve(): ItemStack? {
         val defineFile = File(plugin.dataFolder, "define.yml")
         val defineConfig: FileConfiguration = YamlConfiguration.loadConfiguration(defineFile)
 
